@@ -1,18 +1,20 @@
--- | Tautology module
-module Tautology where
+-- | Propositional module
+module Propositional where
 
 -- | variable value map
 type Assoc k v = [(k, v)]
 
--- | propositions of logic
-data Prop
+-- | formula of logic
+data Form
   = Const Bool
-  | Var Char
-  | Not Prop
-  | And Prop Prop
-  | Imply Prop Prop
+  | Atom Char
+  | Not Form
+  | And Form Form
+  | Or Form Form
+  | Imply Form Form
+  | Iff Form Form
 
--- | subsitution type for associated a character with a boolean value
+-- | subsitution type to store atom values
 type Subst = Assoc Char Bool
 
 -- | find function takes in
@@ -24,21 +26,25 @@ find i s
   where
     (c, b) = head s
 
+-- | atoms function outputs the variables of a given proposition
+atoms :: Form -> [Char]
+atoms (Const _) = []
+atoms (Atom x) = [x]
+atoms (Not p) = atoms p
+atoms (And p q) = atoms p ++ atoms q
+atoms (Or p q) = atoms p ++ atoms q
+atoms (Imply p q) = atoms p ++ atoms q
+atoms (Iff p q) = atoms p ++ atoms q
+
 -- | eval function evaluates a proposition based on a given subsitution
-eval :: Subst -> Prop -> Bool
+eval :: Subst -> Form -> Bool
 eval _ (Const b) = b -- Const Bool
-eval s (Var x) = find x s -- Var Char
+eval s (Atom x) = find x s -- Var Char
 eval s (Not p) = not (eval s p) -- Not Prop
 eval s (And p q) = eval s p && eval s q -- And Prop Prop
+eval s (Or p q) = eval s p || eval s q -- Or Prop Prop
 eval s (Imply p q) = eval s p <= eval s q -- Imply Prop Prop
-
--- | vars function outputs the variables of a given proposition
-vars :: Prop -> [Char]
-vars (Const _) = []
-vars (Var x) = [x]
-vars (Not p) = vars p
-vars (And p q) = vars p ++ vars q
-vars (Imply p q) = vars p ++ vars q
+eval s (Iff p q) = eval s p == eval s q
 
 -- | int2bool function converts an integer to the corresponding binary (bool) value
 int2bool :: Int -> [Bool]
@@ -59,5 +65,5 @@ substs s = [zip s bools | bools <- boolPerms]
     boolPerms = map int2bool [0 .. charLength]
 
 -- | tautology checker
-isTaut :: Prop -> Bool
-isTaut p = and [eval s p | s <- substs (vars p)]
+isTaut :: Form -> Bool
+isTaut p = and [eval s p | s <- substs (atoms p)]
