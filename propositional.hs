@@ -13,12 +13,13 @@ data Form
   | Or Form Form
   | Imply Form Form
   | Iff Form Form
+  deriving (Show)
 
 -- | subsitution type to store atom values
-type Subst = Assoc Char Bool
+type Interpretation = Assoc Char Bool
 
 -- | find function takes in
-find :: Char -> Subst -> Bool
+find :: Char -> Interpretation -> Bool
 find i s
   | null s = False
   | i == c = b
@@ -36,15 +37,15 @@ atoms (Or p q) = atoms p ++ atoms q
 atoms (Imply p q) = atoms p ++ atoms q
 atoms (Iff p q) = atoms p ++ atoms q
 
--- | eval function evaluates a proposition based on a given subsitution
-eval :: Subst -> Form -> Bool
-eval _ (Const b) = b -- Const Bool
-eval s (Atom x) = find x s -- Var Char
-eval s (Not p) = not (eval s p) -- Not Prop
-eval s (And p q) = eval s p && eval s q -- And Prop Prop
-eval s (Or p q) = eval s p || eval s q -- Or Prop Prop
-eval s (Imply p q) = eval s p <= eval s q -- Imply Prop Prop
-eval s (Iff p q) = eval s p == eval s q
+-- | isSatisfied function evaluates a proposition based on a given subsitution
+isSatisfied :: Interpretation -> Form -> Bool
+isSatisfied _ (Const b) = b -- Const Bool
+isSatisfied s (Atom x) = find x s -- Var Char
+isSatisfied s (Not p) = not (isSatisfied s p) -- Not Prop
+isSatisfied s (And p q) = isSatisfied s p && isSatisfied s q -- And Prop Prop
+isSatisfied s (Or p q) = isSatisfied s p || isSatisfied s q -- Or Prop Prop
+isSatisfied s (Imply p q) = isSatisfied s p <= isSatisfied s q -- Imply Prop Prop
+isSatisfied s (Iff p q) = isSatisfied s p == isSatisfied s q
 
 -- | int2bool function converts an integer to the corresponding binary (bool) value
 int2bool :: Int -> [Bool]
@@ -56,14 +57,14 @@ int2bool i
     leftOver = i `mod` 2
     b = leftOver > 0
 
--- | subst function generates all possible substitutions for inputted char list
-substs :: [Char] -> [Subst]
-substs [] = []
-substs s = [zip s bools | bools <- boolPerms]
+-- | interps function generates all possible interpretations for proposition
+interps :: Form -> [Interpretation]
+interps f = [zip alphabet bools | bools <- boolPerms]
   where
-    charLength = length s + 1
+    alphabet = atoms f
+    charLength = length alphabet + 1
     boolPerms = map int2bool [0 .. charLength]
 
--- | tautology checker
-isTaut :: Form -> Bool
-isTaut p = and [eval s p | s <- substs (atoms p)]
+-- | checks if a statement is a tautology
+isTautology :: Form -> Bool
+isTautology f = and [isSatisfied sub f | sub <- interps f]
