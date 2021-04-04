@@ -31,9 +31,9 @@ type Substs k v = [(k, v)]
 -- | substitution type to store atom values
 type Interpretation = Substs String Bool
 
---------------
--- INSTANCE --
---------------
+---------------
+-- INSTANCES --
+---------------
 
 -- | Show instance of form
 instance Show Form where
@@ -147,9 +147,9 @@ parseFile file =
       Left e -> print e >> fail "parse error"
       Right r -> return r
 
-------------
--- HELPER --
-------------
+-------------
+-- HELPERS --
+-------------
 
 -- | int2bool function converts an integer to the corresponding binary (bool) value
 int2bool :: Int -> [Bool]
