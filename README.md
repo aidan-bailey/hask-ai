@@ -8,13 +8,23 @@ First foray into functional programming & propositional logic.
 
 **Usage**
 
-Use ```cabal repl``` to load the package into the GHCi.
+```cabal build``` to build the package.
+
+```cabal repl``` to load the package into the GHCi.
 
 **Parser**
 
-There is a parser implemented enabling users to parse in formulas using a relatable, English form, e.g. "A And B"
+There is a parser implemented enabling users to parse in formulas using a relatable, English form e.g. "A And B"
 
 Example usage: ```let formula = parseString "A And B Not C Imply D"```
+
+**Operations Accepted**
+
+- Not 
+- And
+- Or
+- Imply
+- Iff
 
 **Modules**
 
