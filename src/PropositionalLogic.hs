@@ -36,13 +36,11 @@ find i s
   where
     (c, b) = head s
 
-isSubset :: Eq a => [a] -> [a] -> Bool
-isSubset [] [] = True
-isSubset _ [] = False
-isSubset [] _ = True
-isSubset (x : xs) (y : ys)
-  | x == y = isSubset xs ys
-  | otherwise = isSubset (x : xs) ys
+interpSubset :: Model -> Model -> Bool
+interpSubset m1 m2 = and [or [as2 == as1 | as2 <- m2] | as1 <- m1]
+
+isSubset :: [Model] -> [Model] -> Bool
+isSubset models1 models2 = and [and [interpSubset m1 m2 | m2 <- models2] | m1 <- models1]
 
 ---------------------
 -- OBJECT LANGUAGE --
@@ -57,6 +55,16 @@ atoms (And p q) = atoms p ++ atoms q
 atoms (Or p q) = atoms p ++ atoms q
 atoms (Imply p q) = atoms p ++ atoms q
 atoms (Iff p q) = atoms p ++ atoms q
+
+-- | forms function returns a list of all formulas comprising a formula
+forms :: Form -> [Form]
+forms (Const _) = []
+forms (Atom x) = [Atom x]
+forms (Not p) = Not p : forms p
+forms (And p q) = And p q : forms p ++ forms q
+forms (Or p q) = Or p q : forms p ++ forms q
+forms (Imply p q) = Imply p q : forms p ++ forms q
+forms (Iff p q) = Iff p q : forms p ++ forms q
 
 -- | isSatisfied function evaluates a formula based on a given subsitution
 isSatisfied :: Interpretation -> Form -> Bool
@@ -74,7 +82,8 @@ interps f = [zip alphabet bools | bools <- boolPerms]
   where
     alphabet = atoms f
     charLength = length alphabet + 1
-    boolPerms = map int2bool [0 .. charLength]
+    boolPerms = map (buffer . int2bool) [0 .. charLength]
+    buffer = \list -> if length list < charLength then buffer (False : list) else list
 
 -- | (LEGACY) isSatisfiable function to check if formula is satisfiable
 -- isSatisfiable :: Form -> Bool
@@ -106,7 +115,6 @@ isTautology f = models f == interps f
 
 -- | isValid checks whether a formula is valid (tautology) TODO
 -- isValid :: Form -> [Form] -> Bool
--- isValid f =
 
 -- | isEquivalent function checks whether a formula is equivalent to another
 isEquivalent :: Form -> Form -> Bool
@@ -119,6 +127,15 @@ class Entails a where
 -- | entails function whether one formula entails another (untested)
 instance Entails Form where
   entails a b = isSubset (models a) (models b)
+
+-- | entailed function takes in a formula and returns a list of the formulas that entail it
+entailed :: Form -> [Form]
+entailed f = [subf | (subf, subm) <- subfm, isSubset subm modf]
+  where
+    modf = models f
+    subforms = tail (forms f)
+    submods = map models subforms
+    subfm = zip subforms submods
 
 ---------------------
 -- KNOWLEDGE BASES --
@@ -140,6 +157,3 @@ instance Entails KnowledgeBase where
 -- isAxiomatizable :: Theory -> KnowledgeBase -> Bool TODO
 -- isAxiomatizable t [] = False
 -- isAxiomatizable t k = [t == f | f <- k]
-
----------------------
--- SEMANTIC TABLEAU --
