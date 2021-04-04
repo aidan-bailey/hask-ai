@@ -147,9 +147,19 @@ parseFile file =
       Left e -> print e >> fail "parse error"
       Right r -> return r
 
---------------
--- PL STUFF --
---------------
+------------
+-- HELPER --
+------------
+
+-- | int2bool function converts an integer to the corresponding binary (bool) value
+int2bool :: Int -> [Bool]
+int2bool i
+  | i == 0 = [False]
+  | otherwise = b : int2bool fval
+  where
+    fval = i `div` 2
+    leftOver = i `mod` 2
+    b = leftOver > 0
 
 -- | find function searches for an atoms value in a given interpretation
 find :: String -> Interpretation -> Bool
@@ -159,6 +169,10 @@ find i s
   | otherwise = find i (tail s)
   where
     (c, b) = head s
+
+--------------
+-- PL STUFF --
+--------------
 
 -- | atoms function outputs the atoms of a given formula
 atoms :: Form -> [String]
@@ -180,16 +194,6 @@ isSatisfied s (Or p q) = isSatisfied s p || isSatisfied s q -- Or Prop Prop
 isSatisfied s (Imply p q) = isSatisfied s p <= isSatisfied s q -- Imply Prop Prop
 isSatisfied s (Iff p q) = isSatisfied s p == isSatisfied s q
 
--- | int2bool function converts an integer to the corresponding binary (bool) value
-int2bool :: Int -> [Bool]
-int2bool i
-  | i == 0 = [False]
-  | otherwise = b : int2bool fval
-  where
-    fval = i `div` 2
-    leftOver = i `mod` 2
-    b = leftOver > 0
-
 -- | interps function generates all possible interpretations for a formula
 interps :: Form -> [Interpretation]
 interps f = [zip alphabet bools | bools <- boolPerms]
@@ -198,6 +202,6 @@ interps f = [zip alphabet bools | bools <- boolPerms]
     charLength = length alphabet + 1
     boolPerms = map int2bool [0 .. charLength]
 
--- | checks if a formula is a tautology
+-- | isTautology function checks if a formula is a tautology
 isTautology :: Form -> Bool
 isTautology f = and [isSatisfied sub f | sub <- interps f]
