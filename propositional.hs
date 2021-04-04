@@ -25,11 +25,8 @@ data Form
   | Imply Form Form
   | Iff Form Form
 
--- | variable value map
-type Substs k v = [(k, v)]
-
--- | substitution type to store atom values
-type Interpretation = Substs String Bool
+-- | Interprepation type to map atoms to values
+type Interpretation = [(String, Bool)]
 
 ---------------
 -- INSTANCES --
@@ -201,6 +198,14 @@ interps f = [zip alphabet bools | bools <- boolPerms]
     alphabet = atoms f
     charLength = length alphabet + 1
     boolPerms = map int2bool [0 .. charLength]
+
+-- | isSatisfiable function to check if formula is satisfiable
+isSatisfiable :: Form -> Bool
+isSatisfiable f = or [isSatisfied sub f | sub <- interps f]
+
+-- | models function to acquire models from
+models :: Form -> [Interpretation]
+models f = filter (`isSatisfied` f) (interps f)
 
 -- | isTautology function checks if a formula is a tautology
 isTautology :: Form -> Bool
