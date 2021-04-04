@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+
 -- | Propositional Logic module
 module PropositionalLogic where
 
@@ -6,6 +8,14 @@ import LogicTypes
 -------------
 -- HELPERS --
 -------------
+
+-- | filterList function ANDS two lists (TODO optimize this somehow)
+filterList :: [Interpretation] -> [Interpretation] -> [Interpretation]
+filterList _ [] = []
+filterList [] _ = []
+filterList (l : se) re = if search l re then l : filterList se re else filterList se re
+  where
+    search = \n list -> or [n == l | l <- list]
 
 -- | int2bool function converts an integer to the corresponding binary (bool) value
 int2bool :: Int -> [Bool]
@@ -25,6 +35,14 @@ find i s
   | otherwise = find i (tail s)
   where
     (c, b) = head s
+
+isSubset :: Eq a => [a] -> [a] -> Bool
+isSubset [] [] = True
+isSubset _ [] = False
+isSubset [] _ = True
+isSubset (x : xs) (y : ys)
+  | x == y = isSubset xs ys
+  | otherwise = isSubset (x : xs) ys
 
 ---------------------
 -- OBJECT LANGUAGE --
@@ -65,3 +83,63 @@ interps f = [zip alphabet bools | bools <- boolPerms]
 -- | (LEGACY) isTautology function checks if a formula is a tautology
 -- isTautology :: Form -> Bool
 -- isTautology f = and [isSatisfied sub f | sub <- interps f]
+
+------------------
+-- MODEL THEORY --
+------------------
+
+-- | models function to acquire models from input
+class Mod a where
+  models :: a -> [Model]
+
+-- | models function instance for a single formula
+instance Mod Form where
+  models f = filter (`isSatisfied` f) (interps f)
+
+-- | isSatisfiable function checks whether a formula is satisfiable
+isSatisfiable :: Form -> Bool
+isSatisfiable f = models f /= []
+
+-- | isTautology checks if a formula is a tautology
+isTautology :: Form -> Bool
+isTautology f = models f == interps f
+
+-- | isValid checks whether a formula is valid (tautology) TODO
+-- isValid :: Form -> [Form] -> Bool
+-- isValid f =
+
+-- | isEquivalent function checks whether a formula is equivalent to another
+isEquivalent :: Form -> Form -> Bool
+isEquivalent a b = models a == models b
+
+-- | entails function to check if something entails a form
+class Entails a where
+  entails :: a -> Form -> Bool
+
+-- | entails function whether one formula entails another (untested)
+instance Entails Form where
+  entails a b = isSubset (models a) (models b)
+
+---------------------
+-- KNOWLEDGE BASES --
+---------------------
+
+-- | models instance for a knowledge base
+instance Mod KnowledgeBase where
+  models (k : ks) = filterList (models k) (models ks) -- technically its 'AND'ing all the models
+
+-- | entails function whether one KnowledgeBase entails a formula (untested)
+instance Entails KnowledgeBase where
+  entails k f = isSubset (models k) (models f)
+
+--------------
+-- THEORIES --
+--------------
+
+-- | isAxiomatizable function checks if a given theory is axiomatizable
+-- isAxiomatizable :: Theory -> KnowledgeBase -> Bool TODO
+-- isAxiomatizable t [] = False
+-- isAxiomatizable t k = [t == f | f <- k]
+
+---------------------
+-- SEMANTIC TABLEAU --

@@ -50,7 +50,7 @@ extra-source-files:
 
 library
     -- Modules exported by the library.
-    exposed-modules: LogicTypes Parser PropositionalLogic ModelTheory
+    exposed-modules: LogicTypes Parser PropositionalLogic
 
     -- Modules included in this library but not exported.
     -- other-modules:
