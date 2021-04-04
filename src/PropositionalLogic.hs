@@ -58,10 +58,10 @@ interps f = [zip alphabet bools | bools <- boolPerms]
     charLength = length alphabet + 1
     boolPerms = map int2bool [0 .. charLength]
 
--- | isSatisfiable function to check if formula is satisfiable
-isSatisfiable :: Form -> Bool
-isSatisfiable f = or [isSatisfied sub f | sub <- interps f]
+-- | (LEGACY) isSatisfiable function to check if formula is satisfiable
+-- isSatisfiable :: Form -> Bool
+-- isSatisfiable f = or [isSatisfied sub f | sub <- interps f]
 
--- | isTautology function checks if a formula is a tautology
-isTautology :: Form -> Bool
-isTautology f = and [isSatisfied sub f | sub <- interps f]
+-- | (LEGACY) isTautology function checks if a formula is a tautology
+-- isTautology :: Form -> Bool
+-- isTautology f = and [isSatisfied sub f | sub <- interps f]
