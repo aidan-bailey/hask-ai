@@ -9,6 +9,17 @@ import LogicTypes
 -- HELPERS --
 -------------
 
+-- | removeDuplicates function returns a list without duplicates
+removeDuplicates :: Eq a => [a] -> [a]
+removeDuplicates =
+  foldl
+    ( \seen x ->
+        if x `elem` seen
+          then seen
+          else seen ++ [x]
+    )
+    []
+
 -- | filterList function ANDS two lists (TODO optimize this somehow)
 filterList :: [Interpretation] -> [Interpretation] -> [Interpretation]
 filterList _ [] = []
@@ -80,7 +91,7 @@ isSatisfied s (Iff p q) = isSatisfied s p == isSatisfied s q
 interps :: Form -> [Interpretation]
 interps f = [zip alphabet bools | bools <- boolPerms]
   where
-    alphabet = atoms f
+    alphabet = removeDuplicates (atoms f)
     charLength = length alphabet + 1
     boolPerms = map (buffer . int2bool) [0 .. charLength]
     buffer = \list -> if length list < charLength then buffer (False : list) else list
@@ -109,12 +120,9 @@ instance Mod Form where
 isSatisfiable :: Form -> Bool
 isSatisfiable f = models f /= []
 
--- | isTautology checks if a formula is a tautology
-isTautology :: Form -> Bool
-isTautology f = models f == interps f
-
--- | isValid checks whether a formula is valid (tautology) TODO
--- isValid :: Form -> [Form] -> Bool
+-- | isValid function checks if a formula is valid
+isValid :: Form -> Bool
+isValid f = models f == interps f
 
 -- | isEquivalent function checks whether a formula is equivalent to another
 isEquivalent :: Form -> Form -> Bool
@@ -155,5 +163,3 @@ instance Entails KnowledgeBase where
 
 -- | isAxiomatizable function checks if a given theory is axiomatizable
 -- isAxiomatizable :: Theory -> KnowledgeBase -> Bool TODO
--- isAxiomatizable t [] = False
--- isAxiomatizable t k = [t == f | f <- k]
