@@ -1,5 +1,5 @@
 # Hask AI
-First foray into functional programming & propositional logic.
+First foray into functional programming & logic for ai.
 
 **Dependencies**
 
@@ -8,31 +8,11 @@ First foray into functional programming & propositional logic.
 
 **Usage**
 
-```cabal build``` to build the package.
+```cabal build``` to build a package.
 
-```cabal repl``` to load the package into the GHCi.
+```cabal repl``` to load a package into the GHCi.
 
-**Parser**
-
-There is a parser implemented enabling users to parse in formulas using a relatable, English form e.g. "A And B"
-
-Example usage: ```let formula = parseString "A And B Not C Imply D"```
-
-**Operations Accepted**
-
-- Not 
-- And
-- Or
-- Imply
-- Iff
-
-**Modules**
-
-- *LogicTypes* : Stored types used for formalized logic.
-- *Parser* : Parser implementation to parse English formulas into Haskell's types.
-- *PropositionalLogic* : Functions related to propositional logic.
-- *ModelTheory* : Functions related to model theory.
 
 **Notes**
 
-This repo is still very young in its development cycle. There is still much to be added.
+This repo is still very early in its development cycle. There is still much to be added.
