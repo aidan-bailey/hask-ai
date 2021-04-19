@@ -1,24 +1,38 @@
+-- | Description types module
 module DescriptionTypes where
 
+-- | Role name type
 type Role = String
 
-type ConceptName = String
+-- | Concept name type
+type Concept = String
 
-type IndividualName = String
+-- | Element type
+type Object = String
 
--- | type for formula of logic
-data Concept
-  = Name ConceptName
-  | Not Concept
-  | And Concept Concept
-  | Or Concept Concept
-  | ForAll Role Concept
-  | Exist Role Concept
-  | Top
-  | Bot
+-- | Extension type (maybe)
+type Extension = [Object]
 
--- | Show instance of concept
-instance Show Concept where
+-- | Concept description type
+data Description
+  = ConceptName Concept -- conceptname atom (maybe merge with Top and Bot for 'atomic concepts')
+  | -- | Negation constructor
+    Not Description
+  | -- | Conjunction constructor
+    And Description Description
+  | -- | Disjunction constructor
+    Or Description Description
+  | -- | Value restriction constructor
+    ForAll Role Description
+  | -- | Existential restriction
+    Exist Role Description
+  | -- | Top atomic constructor
+    Top
+  | -- |  Bottom atomic constructor
+    Bot
+
+-- | Show instance for concept description type
+instance Show Description where
   show (Not d) = "¬" ++ show d
   show (And l r) = show l ++ "⊓" ++ show r
   show (Or l r) = show l ++ "⊔" ++ show r
@@ -27,39 +41,46 @@ instance Show Concept where
   show Top = "⊤"
   show Bot = "⊥"
 
--- | domain type
-type Domain = [ConceptName]
+-- | Interpretation domain type
+type InterpDomain = [Object]
 
--- | type ConceptLanguage = ([Name], [Role])
-type ALC = (Domain, [Role], [IndividualName])
+-- | Concept association type
+type ConceptAssoc = (Concept, [Object])
 
--- | Interprepation type to map atoms to values
-type Interpretation = ([Concept], [(IndividualName, Concept)])
+-- | Concept map type
+type ConceptMap = [ConceptAssoc]
 
--- | General Concept Inclusion type
+-- | Role association type
+type RoleAssoc = (Role, [(Concept, Concept)])
+
+-- | Role map type
+type RoleMap = [RoleAssoc]
+
+-- | Interpretation function type
+type InterpFunc = [Concept] -> [Role] -> (ConceptMap, RoleMap)
+
+-- | Interpretation type
+-- | type Interpretation = (InterpDomain, InterpFunction) -- I prefer the implementation below
+type Interpretation = (InterpDomain, (ConceptMap, RoleMap))
+
+-- | Model wrapper type
+type Model = Interpretation
+
+-- | General Description Inclusion type
 data GCI
-  = Equiv Concept Concept
-  | Inclu Concept Concept
+  = Equiv Description Description
+  | Inclu Description Description
 
 -- | Show instance of GCI
 instance Show GCI where
   show (Inclu l r) = show l ++ "⊑" ++ show r
   show (Equiv l r) = show l ++ "≡" ++ show r
 
--- | Model interpretation wrapper
-type Model = Interpretation
-
 -- | TBox type
 type TBox = [GCI]
 
--- | Concept assertion type
-type ConceptAssertion = (IndividualName, Concept)
-
--- | Role assertion type
-type RoleAssertion = ((IndividualName, IndividualName), Role)
-
 -- | Assertion type
-data Assertion = ConceptAssertion | RoleAssertion
+data Assertion = DescriptionAssertion (Object, Description) | RoleAssertion ((Object, Object), Role)
 
 -- | ABox type
 type ABox = [Assertion]
