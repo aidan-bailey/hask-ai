@@ -24,20 +24,20 @@ subset l r
   | null r = null l
   | otherwise = head l `elem` r && subset (tail l) r
 
--- | The getSet function returns the set of a description from an interpretation TODO
-getSet :: Description -> Interpretation -> [Object]
-getSet (ConceptName c) (_, (cm, _)) = foldl disjunction [] [objects | (concept, objects) <- cm, c == concept]
-getSet (Not c) i = negation domain (getSet c i)
+-- | The getExt function returns the extention of a description from an interpretation
+getExt :: Description -> Interpretation -> Extension
+getExt (ConceptName c) (_, (cm, _)) = foldl disjunction [] [objects | (concept, objects) <- cm, c == concept]
+getExt (Not c) i = negation domain (getExt c i)
   where
     (domain, maps) = i
-getSet (And l r) i = conjunction (getSet l i) (getSet r i)
-getSet (Or l r) i = disjunction (getSet l i) (getSet r i)
-getSet (Exist r d) i = [c | c <- domain, o <- getSet d i, o `elem` domain, (c, o) `elem` conceptPairs]
+getExt (And l r) i = conjunction (getExt l i) (getExt r i)
+getExt (Or l r) i = disjunction (getExt l i) (getExt r i)
+getExt (Exist r d) i = [c | c <- domain, o <- getExt d i, o `elem` domain, (c, o) `elem` conceptPairs]
   where
     (domain, (_, roleMap)) = i
     conceptPairs = foldl disjunction [] [conceptPair | (role, conceptPair) <- roleMap, role == r]
 
 -- | The isSatisfied function
 isSatisfied :: Interpretation -> GCI -> Bool
-isSatisfied i (Equiv l r) = subset (getSet l i) (getSet r i) && subset (getSet r i) (getSet l i)
-isSatisfied i (Inclu l r) = subset (getSet l i) (getSet r i)
+isSatisfied i (Equiv l r) = subset (getExt l i) (getExt r i) && subset (getExt r i) (getExt l i)
+isSatisfied i (Inclu l r) = subset (getExt l i) (getExt r i)

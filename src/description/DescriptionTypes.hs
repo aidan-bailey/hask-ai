@@ -42,10 +42,10 @@ instance Show Description where
   show Bot = "⊥"
 
 -- | Interpretation domain type
-type InterpDomain = [Object]
+type InterpDomain = Extension
 
 -- | Concept association type
-type ConceptAssoc = (Concept, [Object])
+type ConceptAssoc = (Concept, Extension)
 
 -- | Concept map type
 type ConceptMap = [ConceptAssoc]
