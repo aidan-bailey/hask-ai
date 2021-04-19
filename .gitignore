@@ -24,3 +24,4 @@ cabal.project.local~
 __pycache__
 parsetab.py
 dist-newstyle
+*.pdf

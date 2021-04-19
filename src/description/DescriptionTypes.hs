@@ -27,8 +27,11 @@ instance Show Concept where
   show Top = "⊤"
   show Bot = "⊥"
 
--- type ConceptLanguage = ([Name], [Role])
-type ALC = ([ConceptName], [Role], [IndividualName])
+-- | domain type
+type Domain = [ConceptName]
+
+-- | type ConceptLanguage = ([Name], [Role])
+type ALC = (Domain, [Role], [IndividualName])
 
 -- | Interprepation type to map atoms to values
 type Interpretation = ([Concept], [(IndividualName, Concept)])
@@ -38,7 +41,7 @@ data GCI
   = Equiv Concept Concept
   | Inclu Concept Concept
 
--- | Show instance of
+-- | Show instance of GCI
 instance Show GCI where
   show (Inclu l r) = show l ++ "⊑" ++ show r
   show (Equiv l r) = show l ++ "≡" ++ show r
