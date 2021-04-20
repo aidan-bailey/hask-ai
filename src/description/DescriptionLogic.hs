@@ -68,3 +68,19 @@ getExt Bot _ = []
 isSatisfied :: Interpretation -> GCI -> Bool
 isSatisfied i (Equiv l r) = subset (getExt l i) (getExt r i) && subset (getExt r i) (getExt l i)
 isSatisfied i (Inclu l r) = subset (getExt l i) (getExt r i)
+
+test :: IO ()
+test = do
+  let domain = ["m", "c6", "c7", "et"]
+  let conceptMap =
+        [ ("Teacher", ["m"]),
+          ("Course", ["c6", "c7"]),
+          ("Person", ["m"]),
+          ("PGC", ["c7"])
+        ]
+  let roleMap =
+        [("teaches", [("m", "c6"), ("m", "c7")])]
+  let interpFunc = (conceptMap, roleMap)
+  let interp = (domain, interpFunc)
+  let gci = Equiv (ConceptName "PGC") (ConceptName "Course")
+  print (isSatisfied interp gci)
