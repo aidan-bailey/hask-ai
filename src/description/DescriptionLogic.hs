@@ -1,9 +1,25 @@
-{-# LANGUAGE FlexibleInstances #-}
-
 -- | Description logic module
 module DescriptionLogic where
 
 import DescriptionTypes as DT
+
+-- | The function findCExt search a concept map for a corresponding concept's extension
+findCExt :: Concept -> ConceptMap -> Extension
+findCExt _ [] = []
+findCExt s cm
+  | s == c = ext
+  | otherwise = findCExt s ms
+  where
+    ((c, ext) : ms) = cm
+
+-- | The function findCPairs searches a role map for a role's corresponding concept pairs
+findCPairs :: Role -> RoleMap -> [ConceptPair]
+findCPairs _ [] = []
+findCPairs s cm
+  | s == c = ext
+  | otherwise = findCPairs s ms
+  where
+    ((c, ext) : ms) = cm
 
 -- | The conjunction method returns the conjunction of two lists
 conjunction :: Eq a => [a] -> [a] -> [a]
@@ -26,8 +42,10 @@ subset l r
 
 -- | The getExt function returns the extention of a description from an interpretation
 getExt :: Description -> Interpretation -> Extension
-getExt (ConceptName c) (_, (cm, _)) = foldl disjunction [] [objects | (concept, objects) <- cm, c == concept]
-getExt (Not c) i = negation domain (getExt c i)
+getExt (ConceptName c) i = findCExt c cm
+  where
+    (_, (cm, _)) = i
+getExt (Not d) i = negation domain (getExt d i)
   where
     (domain, maps) = i
 getExt (And l r) i = conjunction (getExt l i) (getExt r i)
@@ -35,7 +53,16 @@ getExt (Or l r) i = disjunction (getExt l i) (getExt r i)
 getExt (Exist r d) i = [c | c <- domain, o <- getExt d i, o `elem` domain, (c, o) `elem` conceptPairs]
   where
     (domain, (_, roleMap)) = i
-    conceptPairs = foldl disjunction [] [conceptPair | (role, conceptPair) <- roleMap, role == r]
+    conceptPairs = findCPairs r roleMap
+getExt (ForAll r d) i = [c | c <- domain, and [(c, o) `elem` conceptPairs | o <- extensions, o `elem` domain]]
+  where
+    (domain, (_, roleMap)) = i
+    extensions = getExt d i
+    conceptPairs = findCPairs r roleMap
+getExt Top i = domain
+  where
+    (domain, (_, _)) = i
+getExt Bot _ = []
 
 -- | The isSatisfied function
 isSatisfied :: Interpretation -> GCI -> Bool

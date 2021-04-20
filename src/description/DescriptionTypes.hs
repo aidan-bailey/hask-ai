@@ -50,8 +50,11 @@ type ConceptAssoc = (Concept, Extension)
 -- | Concept map type
 type ConceptMap = [ConceptAssoc]
 
+-- | Concept pair type
+type ConceptPair = (Concept, Concept)
+
 -- | Role association type
-type RoleAssoc = (Role, [(Concept, Concept)])
+type RoleAssoc = (Role, [ConceptPair])
 
 -- | Role map type
 type RoleMap = [RoleAssoc]
