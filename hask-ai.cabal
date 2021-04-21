@@ -82,4 +82,6 @@ test-suite hask-ai-test
     main-is:          MyLibTest.hs
 
     -- Test dependencies.
-    build-depends:    base ^>=4.14.1.0
+    build-depends:    base ^>=4.14.1.0,
+                    hask-ai
+
