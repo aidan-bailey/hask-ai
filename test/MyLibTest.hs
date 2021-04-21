@@ -1,64 +1,95 @@
 module Main (main) where
 
+import Control.Monad
+import Data.Monoid
 import DescriptionLogic as DL
 import DescriptionTypes as DT
+import System.Exit
+import Test.QuickCheck
+import Test.QuickCheck.Test
 
 main :: IO ()
-main = putStrLn "Test suite not yet implemented."
+main = do
+  aboxTest
+  tboxTest
 
-basicTest :: IO ()
-basicTest = do
+aboxTest :: IO ()
+aboxTest = do
+  putStrLn "**ABox Satisfaction Test**"
+  result <- quickCheckResult propAbox
+  unless (isSuccess result) exitFailure
+
+tboxTest :: IO ()
+tboxTest = do
+  putStrLn "**TBox Satisfaction Test**"
+  result <- quickCheckResult propTbox
+  unless (isSuccess result) exitFailure
+
+propTbox = do
   let domain = ["m1", "m2", "c6", "c7"]
   let conceptMap =
         [ ("Teacher", ["m1"]),
           ("Course", ["c6", "c7"]),
           ("Person", ["m1", "m2"]),
           ("Student", ["m2"]),
-          ("PGC", ["c7"])
+          ("PGC", ["c7"]),
+          ("UGC", ["c6"])
         ]
   let roleMap =
-        [("teaches", [("m", "c6"), ("m", "c7")])]
+        [ ("teaches", [("m1", "c6"), ("m1", "c7")]),
+          ("attends", [("m2", "c6"), ("m2", "c7")])
+        ]
   let interpFunc = (conceptMap, roleMap)
   let interp = (domain, interpFunc)
-  let gci = Inclu (Exist "teaches" (ConceptName "Course")) (ConceptName "Teacher")
-  print (isSatisfied interp gci)
-
-assertTest :: IO ()
-assertTest = do
-  let a = DescriptionAssertion ("Lucy", ConceptName "Student")
-  let domain = ["m"]
-  let conceptMap =
-        [ ("Lucy", ["m"]),
-          ("Person", ["m"]),
-          ("Course", ["c1", "c2"]),
-          ("PGC", ["c1"]),
-          ("CS600", ["c2"]),
-          ("UGC", ["c2"]),
-          ("Teacher", ["m"])
+  let tbox =
+        [ Inclu
+            (ConceptName "Course")
+            (Not (ConceptName "Person")),
+          Inclu
+            (ConceptName "UGC")
+            (ConceptName "Course"),
+          Inclu
+            (ConceptName "PGC")
+            (ConceptName "Course"),
+          Equiv
+            (ConceptName "Teacher")
+            (And (ConceptName "Person") (Exist "teaches" (ConceptName "Course"))),
+          Inclu
+            (Exist "teaches" Top)
+            (ConceptName "Person"),
+          {-
+          Equiv
+            (ConceptName "Student")
+            ( And
+                (ConceptName "Person")
+                (Exist "attends" (ConceptName "Course"))
+            ),
+          -}
+          Inclu
+            (Exist "attends" Top)
+            (ConceptName "Person")
         ]
-  let roleMap = [("teaches", [("m", "c2")])]
-  let interp = (domain, (conceptMap, roleMap))
-  -- let abox = DescriptionAssertion ("CS600", ConceptName "Course")
-  --  DescriptionAssertion ("Lucy", ConceptName "Person"),
-  let assert = RoleAssertion (("Lucy", "CS600"), "teaches")
-  print (findCPairs "teaches" roleMap)
-  print (isSatisfied interp assert)
+  isSatisfied interp tbox
 
-aboxTest :: IO ()
-aboxTest = do
+propAbox = do
   let abox =
-        [ DescriptionAssertion ("Mary", ConceptName "Person"),
-          DescriptionAssertion ("Hugo", ConceptName "Person"),
+        [ DescriptionAssertion "Mary" (ConceptName "Person"),
           DescriptionAssertion
-            ("Betty", And (ConceptName "Person") (ConceptName "Teacher")),
+            "Hugo"
+            (ConceptName "Person"),
           DescriptionAssertion
-            ("CS600", ConceptName "Course"),
+            "Betty"
+            (And (ConceptName "Person") (ConceptName "Teacher")),
           DescriptionAssertion
-            ("Ph456", And (ConceptName "Course") (ConceptName "PGC")),
-          RoleAssertion (("Mary", "CS600"), "teaches"),
-          RoleAssertion (("Hugo", "Ph456"), "teaches"),
-          RoleAssertion (("Betty", "Ph456"), "attends"),
-          RoleAssertion (("Mary", "Ph456"), "attends")
+            "CS600"
+            (ConceptName "Course"),
+          DescriptionAssertion
+            "Ph456"
+            (And (ConceptName "Course") (ConceptName "PGC")),
+          RoleAssertion ("Mary", "CS600") "teaches",
+          RoleAssertion ("Hugo", "Ph456") "teaches",
+          RoleAssertion ("Betty", "Ph456") "attends",
+          RoleAssertion ("Mary", "Ph456") "attends"
         ]
   let domain = ["h", "m", "b", "c6", "p4", "c5"]
   let conceptMap =
@@ -80,4 +111,4 @@ aboxTest = do
         ]
   let interpFunc = (conceptMap, roleMap)
   let interp = (domain, interpFunc)
-  print (isSatisfied interp abox)
+  isSatisfied interp abox

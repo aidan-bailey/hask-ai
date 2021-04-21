@@ -86,8 +86,8 @@ data GCI
 
 -- | Assertion type
 data Assertion
-  = DescriptionAssertion (Individual, Description)
-  | RoleAssertion ((Individual, Individual), Role)
+  = DescriptionAssertion Individual Description
+  | RoleAssertion (Individual, Individual) Role
 
 --------------------
 -- SHOW INSTANCES --

@@ -83,5 +83,6 @@ test-suite hask-ai-test
 
     -- Test dependencies.
     build-depends:    base ^>=4.14.1.0,
-                    hask-ai
+                      QuickCheck,
+                      hask-ai
 
