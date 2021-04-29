@@ -10,14 +10,8 @@ import Test.QuickCheck.Test
 
 main :: IO ()
 main = do
-  aboxTest
   tboxTest
-
-aboxTest :: IO ()
-aboxTest = do
-  putStrLn "**ABox Satisfaction Test**"
-  result <- quickCheckResult propAbox
-  unless (isSuccess result) exitFailure
+  aboxTest
 
 tboxTest :: IO ()
 tboxTest = do
@@ -68,6 +62,12 @@ propTbox = do
             (ConceptName "Person")
         ]
   satisfies interp tbox
+
+aboxTest :: IO ()
+aboxTest = do
+  putStrLn "**ABox Satisfaction Test**"
+  result <- quickCheckResult propAbox
+  unless (isSuccess result) exitFailure
 
 propAbox = do
   let abox =
