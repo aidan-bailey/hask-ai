@@ -40,9 +40,11 @@ instance Satisfaction ABox where
   satisfies i [] = True
   satisfies i (t : te) = satisfies i t && satisfies i te
 
+{- This is not a strictly kosher way to deal with ABoxes
 instance Satisfaction KnowledgeBase where
   satisfies i (t, a)
     | null t && null a = True
     | null t = satisfies i a
     | null a = satisfies i t
     | otherwise = satisfies i t && satisfies i a
+-}
