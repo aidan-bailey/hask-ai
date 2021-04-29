@@ -12,10 +12,10 @@ type Role = String
 type Concept = String
 
 -- | Element type
-type Object = String
+type Instance = String
 
 -- | Extension type (maybe)
-type Extension = [Object]
+type Extension = [Instance]
 
 -- | Interpretation domain type
 type InterpDomain = Extension

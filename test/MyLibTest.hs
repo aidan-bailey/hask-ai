@@ -57,19 +57,17 @@ propTbox = do
           Inclu
             (Exist "teaches" Top)
             (ConceptName "Person"),
-          {-
           Equiv
             (ConceptName "Student")
             ( And
                 (ConceptName "Person")
                 (Exist "attends" (ConceptName "Course"))
             ),
-          -}
           Inclu
             (Exist "attends" Top)
             (ConceptName "Person")
         ]
-  isSatisfied interp tbox
+  satisfies interp tbox
 
 propAbox = do
   let abox =
@@ -111,4 +109,4 @@ propAbox = do
         ]
   let interpFunc = (conceptMap, roleMap)
   let interp = (domain, interpFunc)
-  isSatisfied interp abox
+  satisfies interp abox

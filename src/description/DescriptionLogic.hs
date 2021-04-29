@@ -3,100 +3,46 @@
 -- | Description logic module
 module DescriptionLogic where
 
+import DescriptionHelpers
 import DescriptionTypes as DT
 
--- | The function findCExt search a concept map for a corresponding concept's extension
-findCExt :: Concept -> ConceptMap -> Extension
-findCExt _ [] = []
-findCExt s cm
-  | s == c = ext
-  | otherwise = findCExt s ms
-  where
-    ((c, ext) : ms) = cm
+------------------
+-- SATISFACTION --
+------------------
 
--- | The function findCPairs searches a role map for a role's corresponding concept pairs
-findCPairs :: Role -> RoleMap -> [ConceptPair]
-findCPairs _ [] = []
-findCPairs s cm
-  | s == c = ext
-  | otherwise = findCPairs s ms
-  where
-    ((c, ext) : ms) = cm
+-- | Satisfaction class for satisfaction functions
+class Satisfaction a where
+  satisfies :: Interpretation -> a -> Bool
 
--- | The conjunction method returns the conjunction of two lists
-conjunction :: Eq a => [a] -> [a] -> [a]
-conjunction l r = filter (`elem` r) l
+-- | Satisfaction instance for GCI
+instance Satisfaction GCI where
+  satisfies i (Equiv l r) =
+    subset (instances l i) (instances r i)
+      && subset (instances r i) (instances l i)
+  satisfies i (Inclu l r) = subset (instances l i) (instances r i)
 
--- | The disjunction method returns the disjunction of two lists
-disjunction :: Eq a => [a] -> [a] -> [a]
-disjunction l r = l ++ filter (`notElem` r) l
-
--- | The negation method returns the negation of two lists
-negation :: Eq a => [a] -> [a] -> [a]
-negation l r = filter (`notElem` r) l
-
--- | The subset function returns true if list a is a subset of list b
-subset :: Eq a => [a] -> [a] -> Bool
-subset l r
-  | null l = True
-  | null r = null l
-  | otherwise = head l `elem` r && subset (tail l) r
-
--- | The getExt function returns the extention of a description from an interpretation
-getExt :: Description -> Interpretation -> Extension
-getExt (ConceptName c) i = findCExt c cm
-  where
-    (_, (cm, _)) = i
-getExt (Not d) i = negation domain (getExt d i)
-  where
-    (domain, maps) = i
-getExt (And l r) i = conjunction (getExt l i) (getExt r i)
-getExt (Or l r) i = disjunction (getExt l i) (getExt r i)
-getExt (Exist r d) i = [c | c <- domain, o <- getExt d i, o `elem` domain, (c, o) `elem` conceptPairs]
-  where
-    (domain, (_, roleMap)) = i
-    conceptPairs = findCPairs r roleMap
-getExt (ForAll r d) i = [c | c <- domain, and [(c, o) `elem` conceptPairs | o <- extensions, o `elem` domain]]
-  where
-    (domain, (_, roleMap)) = i
-    extensions = getExt d i
-    conceptPairs = findCPairs r roleMap
-getExt Top i = domain
-  where
-    (domain, (_, _)) = i
-getExt Bot _ = []
-
--- | Satisfied class for satisfaction functions
-class Satisfied a where
-  isSatisfied :: Interpretation -> a -> Bool
-
--- | Satisfied instance for GCI
-instance Satisfied GCI where
-  isSatisfied i (Equiv l r) = subset (getExt l i) (getExt r i) && subset (getExt r i) (getExt l i)
-  isSatisfied i (Inclu l r) = subset (getExt l i) (getExt r i)
-
--- | Satisfied instance for TBox
-instance Satisfied TBox where
-  isSatisfied i [] = True
-  isSatisfied i (t : te) = isSatisfied i t && isSatisfied i te
+-- | Satisfaction instance for TBox
+instance Satisfaction TBox where
+  satisfies i [] = True
+  satisfies i (t : te) = satisfies i t && satisfies i te
 
 -- | Satisfied instance for assertion
-instance Satisfied Assertion where
-  isSatisfied i (DescriptionAssertion n c) = subset (findCExt n cm) (getExt c i)
+instance Satisfaction Assertion where
+  satisfies i (DescriptionAssertion n c) = subset (findCExt n cm) (instances c i)
     where
       (_, (cm, _)) = i
-  isSatisfied i (RoleAssertion (n1, n2) r) = or [(a, b) `elem` findCPairs r rm | a <- findCExt n1 cm, b <- findCExt n2 cm]
+  satisfies i (RoleAssertion (n1, n2) r) = or [(a, b) `elem` findCPairs r rm | a <- findCExt n1 cm, b <- findCExt n2 cm]
     where
       (_, (cm, rm)) = i
 
 -- | Satisfied instance for abox
-instance Satisfied ABox where
-  isSatisfied i [] = True
-  isSatisfied i (t : te) = isSatisfied i t && isSatisfied i te
+instance Satisfaction ABox where
+  satisfies i [] = True
+  satisfies i (t : te) = satisfies i t && satisfies i te
 
--- | Satisfied instanct of knowledge base
-instance Satisfied KnowledgeBase where
-  isSatisfied i ([], []) = True
-  isSatisfied i ([], a) = isSatisfied i a
-  isSatisfied i (t, []) = isSatisfied i t
-  isSatisfied i (t, a) = isSatisfied i t && isSatisfied i a
+instance Satisfaction KnowledgeBase where
+  satisfies i (t, a)
+    | null t && null a = True
+    | null t = satisfies i a
+    | null a = satisfies i t
+    | otherwise = satisfies i t && satisfies i a

@@ -8,11 +8,12 @@ First foray into functional programming & logic for ai.
 
 **Usage**
 
-```cabal build``` to build a package.
+```cabal build``` to build the package.
 
-```cabal repl``` to load a package into the GHCi.
+```cabal repl``` loads modules into the GHCi for testing.
 
 
 **Notes**
 
-This repo is still very early in its development cycle. There is still much to be added.
+This repo is still very early in its development cycle. There is still much to be added (also not every user friendly yet (but it will be!)).
+
