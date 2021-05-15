@@ -50,10 +50,10 @@ extra-source-files:
 
 library
     -- Modules exported by the library.
-    exposed-modules: PropositionalTypes PropositionalParser PropositionalLogic DescriptionTypes DescriptionHelpers DescriptionLogic
+    exposed-modules: PT PL DescriptionTypes DescriptionLogic
 
     -- Modules included in this library but not exported.
-    -- other-modules:
+    other-modules: PH PP DescriptionHelpers 
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

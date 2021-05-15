@@ -16,6 +16,7 @@ Example usage: ```let formula = parseString "A And B Not C Imply D"```
 
 **Modules**
 
-- *LogicTypes* : Stored types used for formalized logic.
-- *Parser* : Parser implementation to parse English formulas into Haskell's types.
-- *PropositionalLogic* : Functions related to propositional logic.
+- *PT* (PropositionalTypes) : Stored types used for formalized logic.
+- *PP* (PropositionalParser) : Parser implementation to parse English formulas into Haskell's types.
+- *PP* (PropositionalHelpers) : Helper functions.
+- *PL* (PropositionalLogic) : Functions related to propositional logic.

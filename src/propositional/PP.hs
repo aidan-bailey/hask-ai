@@ -1,8 +1,8 @@
 -- | Parser
-module PropositionalParser where
+module PP where
 
 import Control.Monad
-import PropositionalTypes
+import PT
 import System.IO
 import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr
