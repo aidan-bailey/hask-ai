@@ -136,15 +136,6 @@ class Entails a where
 instance Entails Form where
   entails a b = isSubset (models a) (models b)
 
--- | entailed function takes in a formula and returns a list of the formulas that entail it
-entailed :: Form -> [Form]
-entailed f = [subf | (subf, subm) <- subfm, isSubset subm modf]
-  where
-    modf = models f
-    subforms = tail (forms f)
-    submods = map models subforms
-    subfm = zip subforms submods
-
 ---------------------
 -- KNOWLEDGE BASES --
 ---------------------
