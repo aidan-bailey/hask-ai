@@ -2,7 +2,7 @@ module KlmT where
 
 type Name = String
 
--- | type for formula of logic
+-- | type for formula of defeasible logic
 data Form
   = -- | Const
     Const Bool
@@ -21,11 +21,14 @@ data Form
   | -- | Typically
     Typi Form Form
 
--- | Interprepation type to map atoms to values
-type Interpretation = [(Name, Bool)]
+-- | Valuation type to map atoms to values
+type Valuation = (Name, Bool)
 
--- | Model interpretation wrapper
-type Model = Interpretation
+-- | State type
+type State = (Form, Valuation)
+
+-- | Preferential interpretation type
+type Interpretation = [[State]]
 
 -- | KnowledgeBase type
 type KnowledgeBase = [Form]

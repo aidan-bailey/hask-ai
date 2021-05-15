@@ -1,7 +1,7 @@
 -- | Description helpers module
-module DescriptionHelpers where
+module AlcH where
 
-import DescriptionTypes
+import AlcT
 
 -- | The function findCExt search a concept map for a corresponding concept's extension
 findCExt :: Concept -> ConceptMap -> Extension

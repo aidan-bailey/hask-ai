@@ -1,10 +1,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 -- | Description logic module
-module DescriptionLogic where
+module AlcL where
 
-import DescriptionHelpers
-import DescriptionTypes as DT
+import AlcH
+import AlcT
 
 ------------------
 -- SATISFACTION --
