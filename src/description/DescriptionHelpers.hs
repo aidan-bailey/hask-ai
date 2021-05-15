@@ -21,15 +21,15 @@ findCPairs s cm
   where
     ((c, ext) : ms) = cm
 
--- | The conjunction method returns the conjunction of two lists
+-- | The conjunction function returns the conjunction of two lists
 conjunction :: Eq a => [a] -> [a] -> [a]
 conjunction l r = filter (`elem` r) l
 
--- | The disjunction method returns the disjunction of two lists
+-- | The disjunction function returns the disjunction of two lists
 disjunction :: Eq a => [a] -> [a] -> [a]
 disjunction l r = l ++ filter (`notElem` r) l
 
--- | The negation method returns the negation of two lists
+-- | The negation function returns the negation of two lists
 negation :: Eq a => [a] -> [a] -> [a]
 negation l r = filter (`notElem` r) l
 
@@ -40,26 +40,45 @@ subset l r
   | null r = null l
   | otherwise = head l `elem` r && subset (tail l) r
 
--- | The instances function returns the instance list of a description from an interpretation
-instances :: Description -> Interpretation -> Extension
-instances (ConceptName c) i = findCExt c cm
+-- | The extension function returns the extension of a description w.r.t. an interpretation
+extension :: Description -> Interpretation -> Extension
+extension (ConceptName c) i = findCExt c cm
   where
     (_, (cm, _)) = i
-instances (Not d) i = negation domain (instances d i)
+extension (Not d) i = negation domain (extension d i)
   where
     (domain, maps) = i
-instances (And l r) i = conjunction (instances l i) (instances r i)
-instances (Or l r) i = disjunction (instances l i) (instances r i)
-instances (Exist r d) i = [c | c <- domain, o <- instances d i, o `elem` domain, (c, o) `elem` conceptPairs]
+extension (And l r) i = conjunction (extension l i) (extension r i)
+extension (Or l r) i = disjunction (extension l i) (extension r i)
+extension (Exists r d) i = [c | c <- domain, o <- extension d i, o `elem` domain, (c, o) `elem` conceptPairs]
   where
     (domain, (_, roleMap)) = i
     conceptPairs = findCPairs r roleMap
-instances (ForAll r d) i = [c | c <- domain, and [(c, o) `elem` conceptPairs | o <- extensions, o `elem` domain]]
+extension (Forall r d) i = [c | c <- domain, and [(c, o) `elem` conceptPairs | o <- extensions, o `elem` domain]]
   where
     (domain, (_, roleMap)) = i
-    extensions = instances d i
+    extensions = extension d i
     conceptPairs = findCPairs r roleMap
-instances Top i = domain
+extension Top i = domain
   where
     (domain, (_, _)) = i
-instances Bot _ = []
+extension Bot _ = []
+
+-- | The names function returns the names contained in a concept description
+names :: Description -> [Concept]
+names (ConceptName c) = [c]
+names (And l r) = names l ++ names r
+names (Or l r) = names l ++ names r
+names (Exists _ c) = names c
+names (Forall _ c) = names c
+names Top = []
+names Bot = []
+
+--
+class Subsumption a where
+  subsum :: [a] -> [a] -> Bool
+
+instance Subsumption Assertion where
+  subsum [] _ = True
+  subsum _ [] = False
+  subsum l r = subset l r

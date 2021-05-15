@@ -36,29 +36,29 @@ propTbox = do
   let interpFunc = (conceptMap, roleMap)
   let interp = (domain, interpFunc)
   let tbox =
-        [ Inclu
+        [ Subsum
             (ConceptName "Course")
             (Not (ConceptName "Person")),
-          Inclu
+          Subsum
             (ConceptName "UGC")
             (ConceptName "Course"),
-          Inclu
+          Subsum
             (ConceptName "PGC")
             (ConceptName "Course"),
           Equiv
             (ConceptName "Teacher")
-            (And (ConceptName "Person") (Exist "teaches" (ConceptName "Course"))),
-          Inclu
-            (Exist "teaches" Top)
+            (And (ConceptName "Person") (Exists "teaches" (ConceptName "Course"))),
+          Subsum
+            (Exists "teaches" Top)
             (ConceptName "Person"),
           Equiv
             (ConceptName "Student")
             ( And
                 (ConceptName "Person")
-                (Exist "attends" (ConceptName "Course"))
+                (Exists "attends" (ConceptName "Course"))
             ),
-          Inclu
-            (Exist "attends" Top)
+          Subsum
+            (Exists "attends" Top)
             (ConceptName "Person")
         ]
   satisfies interp tbox
