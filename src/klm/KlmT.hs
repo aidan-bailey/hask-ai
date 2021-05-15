@@ -18,6 +18,8 @@ data Form
     Imply Form Form
   | -- | If and only if
     Iff Form Form
+  | -- | Typically
+    Typi Form Form
 
 -- | Interprepation type to map atoms to values
 type Interpretation = [(Name, Bool)]
@@ -39,6 +41,7 @@ instance Show Form where
   show (Or f1 f2) = show f1 ++ "∨" ++ show f2
   show (Imply f1 f2) = show f1 ++ "→" ++ show f2
   show (Iff f1 f2) = show f1 ++ "↔" ++ show f2
+  show (Typi f1 f2) = show f1 ++ "⊢" ++ show f2
 
 -- | Eq instance of form
 instance Eq Form where
@@ -48,3 +51,4 @@ instance Eq Form where
   (==) (Or l1 l2) (Or r1 r2) = l1 == r1 && l2 == r2 || l1 == r2 && l2 == r1
   (==) (Imply l1 l2) (Imply r1 r2) = l1 == r1 && l2 == r2
   (==) (Iff l1 l2) (Iff r1 r2) = l1 == r1 && l2 == r2 || l1 == r2 && l2 == r1
+  (==) (Typi l1 l2) (Typi r1 r2) = l1 == r1 && l2 == r2
