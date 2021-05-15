@@ -30,9 +30,6 @@ type Model = Interpretation
 -- | KnowledgeBase type
 type KnowledgeBase = [Form]
 
--- | Theory type
-type Theory = [Form]
-
 -- | Show instance of form
 instance Show Form where
   show (Atom c) = show c
