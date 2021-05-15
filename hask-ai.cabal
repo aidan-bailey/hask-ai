@@ -50,10 +50,10 @@ extra-source-files:
 
 library
     -- Modules exported by the library.
-    exposed-modules: PT PL DescriptionTypes DescriptionLogic
+    exposed-modules: KlmT PT PL AlcT AlcL
 
     -- Modules included in this library but not exported.
-    other-modules: PH PP DescriptionHelpers 
+    other-modules: PH PP AlcH 
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

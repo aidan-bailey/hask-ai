@@ -1,4 +1,4 @@
-module PT where
+module KlmT where
 
 type Name = String
 
