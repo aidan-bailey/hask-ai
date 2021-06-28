@@ -1,5 +1,5 @@
 -- | Description types module
-module AlcT where
+module AlcTypes where
 
 -----------
 -- TYPES --

@@ -1,23 +1,76 @@
 module Main (main) where
 
+import AlcLogics as AL
+import AlcTypes as AT
 import Control.Monad
 import Data.Monoid
-import DescriptionLogic as DL
-import DescriptionTypes as DT
+import KlmLogics as KL
+import KlmTypes as KT
+import PropositionalTypes as PT
 import System.Exit
 import Test.QuickCheck
 import Test.QuickCheck.Test
 
 main :: IO ()
 main = do
+  -- ALC Tests
   tboxTest
   aboxTest
+  -- Defeasible Tests
+  prefKBTest
 
-tboxTest :: IO ()
-tboxTest = do
-  putStrLn "**TBox Satisfaction Test**"
-  result <- quickCheckResult propTbox
+----------------------
+-- DEFEASIBLE TESTS --
+----------------------
+
+propKBTest = do
+  let states =
+        [ [ [("boat", False), ("floats", False), ("leaky", False), ("FlyingDutchman", False)], -- Level 0
+            [("boat", False), ("floats", True), ("leaky", False), ("FlyingDutchman", False)],
+            [("boat", True), ("floats", True), ("leaky", False), ("FlyingDutchman", False)],
+            [("boat", True), ("floats", True), ("leaky", False), ("FlyingDutchman", True)]
+          ],
+          [ [("boat", True), ("floats", False), ("leaky", True), ("FlyingDutchman", False)], -- Level 1
+            [("boat", True), ("floats", False), ("leaky", True), ("FlyingDutchman", True)]
+          ],
+          [ [("boat", True), ("floats", True), ("leaky", True), ("FlyingDutchman", False)], -- Level 2
+            [("boat", True), ("floats", True), ("leaky", True), ("FlyingDutchman", True)]
+          ],
+          [ [("boat", True), ("floats", True), ("leaky", False), ("FlyingDutchman", True)], -- bf!ld Level ∞
+            [("boat", False), ("floats", True), ("leaky", True), ("FlyingDutchman", True)], -- !bfld
+            [("boat", False), ("floats", False), ("leaky", True), ("FlyingDutchman", True)], -- !b!fld
+            [("boat", False), ("floats", True), ("leaky", True), ("FlyingDutchman", False)], -- !bfl!d
+            [("boat", False), ("floats", False), ("leaky", True), ("FlyingDutchman", False)], -- !b!fl!d
+            [("boat", False), ("floats", True), ("leaky", True), ("FlyingDutchman", False)], -- !bfl!d
+            [("boat", False), ("floats", True), ("leaky", False), ("FlyingDutchman", True)], -- !bf!ld
+            [("boat", False), ("floats", True), ("leaky", False), ("FlyingDutchman", True)] -- !b!f!ld
+          ]
+        ]
+  let knowledgebase =
+        [ ( Atom "boat",
+            Atom "floats"
+          ),
+          ( PT.Not (Impli (Atom "leaky") (Atom "boat")),
+            Const False
+          ),
+          ( Atom "leaky",
+            PT.Not (Atom "floats")
+          ),
+          ( PT.Not (Impli (Atom "FlyingDutchman") (Atom "boat")),
+            Const False
+          )
+        ]
+  KL.satisfies states knowledgebase
+
+prefKBTest :: IO ()
+prefKBTest = do
+  putStrLn "**Preferential Satisfaction Test**"
+  result <- quickCheckResult propKBTest
   unless (isSuccess result) exitFailure
+
+---------------
+-- ALC TESTS --
+---------------
 
 propTbox = do
   let domain = ["m1", "m2", "c6", "c7"]
@@ -38,7 +91,7 @@ propTbox = do
   let tbox =
         [ Subsum
             (ConceptName "Course")
-            (Not (ConceptName "Person")),
+            (AT.Not (ConceptName "Person")),
           Subsum
             (ConceptName "UGC")
             (ConceptName "Course"),
@@ -47,13 +100,13 @@ propTbox = do
             (ConceptName "Course"),
           Equiv
             (ConceptName "Teacher")
-            (And (ConceptName "Person") (Exists "teaches" (ConceptName "Course"))),
+            (AT.And (ConceptName "Person") (Exists "teaches" (ConceptName "Course"))),
           Subsum
             (Exists "teaches" Top)
             (ConceptName "Person"),
           Equiv
             (ConceptName "Student")
-            ( And
+            ( AT.And
                 (ConceptName "Person")
                 (Exists "attends" (ConceptName "Course"))
             ),
@@ -61,7 +114,13 @@ propTbox = do
             (Exists "attends" Top)
             (ConceptName "Person")
         ]
-  satisfies interp tbox
+  AL.satisfies interp tbox
+
+tboxTest :: IO ()
+tboxTest = do
+  putStrLn "**TBox Satisfaction Test**"
+  result <- quickCheckResult propTbox
+  unless (isSuccess result) exitFailure
 
 aboxTest :: IO ()
 aboxTest = do
@@ -77,13 +136,13 @@ propAbox = do
             (ConceptName "Person"),
           DescriptionAssertion
             "Betty"
-            (And (ConceptName "Person") (ConceptName "Teacher")),
+            (AT.And (ConceptName "Person") (ConceptName "Teacher")),
           DescriptionAssertion
             "CS600"
             (ConceptName "Course"),
           DescriptionAssertion
             "Ph456"
-            (And (ConceptName "Course") (ConceptName "PGC")),
+            (AT.And (ConceptName "Course") (ConceptName "PGC")),
           RoleAssertion ("Mary", "CS600") "teaches",
           RoleAssertion ("Hugo", "Ph456") "teaches",
           RoleAssertion ("Betty", "Ph456") "attends",
@@ -109,4 +168,4 @@ propAbox = do
         ]
   let interpFunc = (conceptMap, roleMap)
   let interp = (domain, interpFunc)
-  satisfies interp abox
+  AL.satisfies interp abox
